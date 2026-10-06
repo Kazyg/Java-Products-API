@@ -1,0 +1,27 @@
+name: Java CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: mvn -B verify
+      - run: docker build -t item-comparison-api .
+      - name: Start container and check health
+        run: |
+          docker compose up -d --no-build --wait --wait-timeout 120
+          curl --fail http://localhost:8080/actuator/health/readiness
+          curl --fail http://localhost:8080/products
+      - name: Container logs
+        if: failure()
+        run: docker compose logs
+      - name: Stop containers
+        if: always()
+        run: docker compose down --volumes

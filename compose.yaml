@@ -1,0 +1,15 @@
+services:
+  api:
+    image: item-comparison-api
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: container
+      APP_SEED_DATA: "true"
+    volumes:
+      - products-data:/app/data
+    stop_grace_period: 30s
+
+volumes:
+  products-data:
